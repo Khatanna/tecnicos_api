@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String  @id @default(uuid())
+  email    String  @unique
+  name     String?
+  username String  @unique
+  password String
+}
+
+model Service {
+  id                   String             @id @default(uuid())
+  code                 String             @unique @map("codigo")
+  usuario              String             @map("usuario")
+  ot                   String             @map("ot")
+  installedEquipment   Equipment[]        @relation("InstalledServices")
+  retiredEquipment     Equipment[]        @relation("RetiredServices")
+  node                 String             @map("nodo")
+  technicalReport      String             @map("informe_tecnico")
+  fecha                String             @map("fecha")
+  typeOfInstallationId String?            @map("tipo_de_instalacion_id")
+  typeOfInstallation   TypeOfInstallation @relation(fields: [id], references: [id])
+  georeference         String             @map("georeferencia")
+
+  created_at DateTime @default(now()) @map("creado_en")
+  updated_at DateTime @default(now()) @updatedAt @map("actualizado_en")
+
+  @@map("servicio")
+}
+
+model Equipment {
+  id     String @id @default(uuid())
+  code   String @unique @map("codigo")
+  name   String @map("nombre")
+  marca  String @map("marca")
+  modelo String @map("modelo")
+
+  installedServices Service[] @relation("InstalledServices")
+  retiredServices   Service[] @relation("RetiredServices")
+
+  @@map("equipo")
+}
+
+model TypeOfInstallation {
+  id       String    @id @default(uuid())
+  name     String    @unique @map("nombre")
+  services Service[]
+
+  @@map("tipo_instalacion")
+}
